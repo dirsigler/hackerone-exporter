@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.27.2
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.89.2
+    hooks:
+      - id: trufflehog
+        args: [--only-verified]
+  - repo: https://github.com/dirsigler/pre-commit-golang
+    rev: "v0.1.0"
+    hooks:
+      - id: go-fmt
+      - id: go-imports
+      - id: go-cyclo
+        args: [-over=60]
+      - id: no-go-testing
+      - id: golangci-lint
+      - id: go-critic
+      - id: go-unit-tests
+      - id: go-mod-tidy
+      - id: go-vulncheck
