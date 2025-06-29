@@ -1,95 +1,57 @@
+// Copyright 2025 Dennis Irsigler
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package config
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 
-	"github.com/caarlos0/env/v10"
 	"github.com/urfave/cli/v3"
 )
 
 // Config holds the application configuration
 type Config struct {
-	HackerOneBasicAuthUsername string `env:"HACKERONE_BASIC_AUTH_USERNAME,required"`
-	HackerOneBasicAuthPassword string `env:"HACKERONE_BASIC_AUTH_PASSWORD,required"`
-	Port                       int64  `env:"PORT" envDefault:"8080"`
-	ScrapeInterval             int64  `env:"SCRAPE_INTERVAL" envDefault:"60"`
-	LogLevel                   string `env:"LOG_LEVEL" envDefault:"info"`
-	HackerOneAPIURL            string `env:"HACKERONE_API_URL" envDefault:"https://api.hackerone.com"`
-	OrganizationID             string `env:"HACKERONE_ORGANIZATION_ID,required"`
+	APIUser     string
+	APIPassword string
+	Port        int64
+	LogLevel    string
+	APIURL      string
+	OrgID       string
 }
 
-// Load parses configuration from environment variables and CLI context
-func Load(cmd *cli.Command) (*Config, error) {
-	// Parse configuration from environment variables
-	config := &Config{}
-	if err := env.Parse(config); err != nil {
-		return nil, fmt.Errorf("parsing config from environment: %w", err)
+// New creates a new Config struct from the cli.Command
+func New(cmd *cli.Command) *Config {
+	return &Config{
+		APIUser:     cmd.String("api-user"),
+		APIPassword: cmd.String("api-password"),
+		Port:        cmd.Int("port"),
+		LogLevel:    cmd.String("log-level"),
+		APIURL:      cmd.String("api-url"),
+		OrgID:       cmd.String("org-id"),
 	}
-
-	// Override with CLI flags if provided
-	if cmd.String("hackerone-basic-auth-username") != "" {
-		config.HackerOneBasicAuthUsername = cmd.String("hackerone-basic-auth-username")
-	}
-	if cmd.String("hackerone-basic-auth-password") != "" {
-		config.HackerOneBasicAuthPassword = cmd.String("hackerone-basic-auth-password")
-	}
-	if cmd.Int("port") != 8080 {
-		config.Port = cmd.Int("port")
-	}
-	if cmd.Int("scrape-interval") != 60 {
-		config.ScrapeInterval = cmd.Int("scrape-interval")
-	}
-	if cmd.String("log-level") != "info" {
-		config.LogLevel = cmd.String("log-level")
-	}
-	if cmd.String("organization-id") != "" {
-		config.OrganizationID = cmd.String("organization-id")
-	}
-
-	// Validate required configuration
-	if err := config.Validate(); err != nil {
-		return nil, err
-	}
-
-	return config, nil
-}
-
-// Validate checks if all required configuration is present
-func (c *Config) Validate() error {
-	if c.HackerOneBasicAuthUsername == "" {
-		return fmt.Errorf("HackerOne Basic Auth Username is required")
-	}
-	if c.HackerOneBasicAuthPassword == "" {
-		return fmt.Errorf("HackerOne Basic Auth Password is required")
-	}
-	if c.OrganizationID == "" {
-		return fmt.Errorf("HackerOne Organization ID is required")
-	}
-
-	return nil
 }
 
 // SetupLogger configures the structured logger based on config
 func (c *Config) SetupLogger() *slog.Logger {
-	var logLevel slog.Level
-	switch strings.ToLower(c.LogLevel) {
-	case "debug":
-		logLevel = slog.LevelDebug
-	case "info":
-		logLevel = slog.LevelInfo
-	case "warn", "warning":
-		logLevel = slog.LevelWarn
-	case "error":
-		logLevel = slog.LevelError
-	default:
-		logLevel = slog.LevelInfo
+	var level slog.Level
+	if err := level.UnmarshalText([]byte(c.LogLevel)); err != nil {
+		level = slog.LevelInfo
 	}
 
 	opts := &slog.HandlerOptions{
-		Level: logLevel,
+		Level: level,
 	}
 
 	handler := slog.NewTextHandler(os.Stdout, opts)
@@ -100,26 +62,22 @@ func (c *Config) SetupLogger() *slog.Logger {
 func CLIFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:    "hackerone-basic-auth-username",
-			Usage:   "HackerOne Basic Auth Username (can also be set via HACCERONE_BASIC_AUTH_USERNAME env var)",
-			Sources: cli.EnvVars("HACKERONE_BASIC_AUTH_USERNAME"),
+			Name:     "api-user",
+			Usage:    "HackerOne API Username",
+			Sources:  cli.EnvVars("HACKERONE_API_USER"),
+			Required: true,
 		},
 		&cli.StringFlag{
-			Name:    "hackerone-basic-auth-password",
-			Usage:   "HackerOne Basic Auth Password (can also be set via HACCERONE_BASIC_AUTH_PASSWORD env var)",
-			Sources: cli.EnvVars("HACKERONE_BASIC_AUTH_PASSWORD"),
+			Name:     "api-password",
+			Usage:    "HackerOne API Password",
+			Sources:  cli.EnvVars("HACKERONE_API_PASSWORD"),
+			Required: true,
 		},
 		&cli.IntFlag{
 			Name:    "port",
 			Usage:   "Port to listen on",
 			Sources: cli.EnvVars("PORT"),
 			Value:   8080,
-		},
-		&cli.IntFlag{
-			Name:    "scrape-interval",
-			Usage:   "Scrape interval in seconds",
-			Sources: cli.EnvVars("SCRAPE_INTERVAL"),
-			Value:   60,
 		},
 		&cli.StringFlag{
 			Name:    "log-level",
@@ -128,9 +86,17 @@ func CLIFlags() []cli.Flag {
 			Value:   "info",
 		},
 		&cli.StringFlag{
-			Name:    "organization-id",
-			Usage:   "HackerOne Organization ID",
-			Sources: cli.EnvVars("HACKERONE_ORGANIZATION_ID"),
+			Name:     "org-id",
+			Usage:    "HackerOne Organization ID",
+			Sources:  cli.EnvVars("HACKERONE_ORG_ID"),
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:    "api-url",
+			Usage:   "HackerOne API URL",
+			Sources: cli.EnvVars("HACKERONE_API_URL"),
+			Value:   "https://api.hackerone.com",
+			Hidden:  true,
 		},
 	}
 }

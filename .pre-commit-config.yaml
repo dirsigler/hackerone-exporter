@@ -27,3 +27,8 @@ repos:
       - id: go-unit-tests
       - id: go-mod-tidy
       - id: go-vulncheck
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v2.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]

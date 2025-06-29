@@ -1,3 +1,17 @@
+// Copyright 2025 Dennis Irsigler
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package types
 
 import "time"
@@ -71,7 +85,97 @@ type Assets struct {
 }
 
 type Reports struct {
-	Data  []any `json:"data"`
+	Data []struct {
+		ID         string `json:"id"`
+		Type       string `json:"type"`
+		Attributes struct {
+			Title                    string    `json:"title"`
+			State                    string    `json:"state"`
+			CreatedAt                time.Time `json:"created_at"`
+			SubmittedAt              time.Time `json:"submitted_at"`
+			VulnerabilityInformation string    `json:"vulnerability_information"`
+			TriagedAt                any       `json:"triaged_at"`
+			ClosedAt                 any       `json:"closed_at"`
+			LastReporterActivityAt   any       `json:"last_reporter_activity_at"`
+			FirstProgramActivityAt   any       `json:"first_program_activity_at"`
+			LastProgramActivityAt    any       `json:"last_program_activity_at"`
+			BountyAwardedAt          any       `json:"bounty_awarded_at"`
+			LastActivityAt           any       `json:"last_activity_at"`
+			LastPublicActivityAt     any       `json:"last_public_activity_at"`
+			SwagAwardedAt            any       `json:"swag_awarded_at"`
+			DisclosedAt              any       `json:"disclosed_at"`
+		} `json:"attributes,omitempty"`
+		Relationships struct {
+			Reporter struct {
+				Data struct {
+					ID         string `json:"id"`
+					Type       string `json:"type"`
+					Attributes struct {
+						Username       string    `json:"username"`
+						Name           string    `json:"name"`
+						Disabled       bool      `json:"disabled"`
+						CreatedAt      time.Time `json:"created_at"`
+						ProfilePicture struct {
+							Six2X62   string `json:"62x62"`
+							Eight2X82 string `json:"82x82"`
+							One10X110 string `json:"110x110"`
+							Two60X260 string `json:"260x260"`
+						} `json:"profile_picture"`
+					} `json:"attributes"`
+				} `json:"data"`
+			} `json:"reporter"`
+			Collaborators struct {
+				Data []struct {
+					Weight int `json:"weight"`
+					User   struct {
+						ID         string `json:"id"`
+						Type       string `json:"type"`
+						Attributes struct {
+							Username       string    `json:"username"`
+							Name           string    `json:"name"`
+							Disabled       bool      `json:"disabled"`
+							CreatedAt      time.Time `json:"created_at"`
+							ProfilePicture struct {
+								Six2X62   string `json:"62x62"`
+								Eight2X82 string `json:"82x82"`
+								One10X110 string `json:"110x110"`
+								Two60X260 string `json:"260x260"`
+							} `json:"profile_picture"`
+							Reputation int `json:"reputation"`
+							Signal     int `json:"signal"`
+							Impact     int `json:"impact"`
+						} `json:"attributes"`
+					} `json:"user"`
+				} `json:"data"`
+			} `json:"collaborators"`
+			Program struct {
+				Data struct {
+					ID         string `json:"id"`
+					Type       string `json:"type"`
+					Attributes struct {
+						Handle    string    `json:"handle"`
+						CreatedAt time.Time `json:"created_at"`
+						UpdatedAt time.Time `json:"updated_at"`
+					} `json:"attributes"`
+				} `json:"data"`
+			} `json:"program"`
+			Weakness struct {
+				Data struct {
+					ID         string `json:"id"`
+					Type       string `json:"type"`
+					Attributes struct {
+						Name        string    `json:"name"`
+						Description string    `json:"description"`
+						ExternalID  string    `json:"external_id"`
+						CreatedAt   time.Time `json:"created_at"`
+					} `json:"attributes"`
+				} `json:"data"`
+			} `json:"weakness"`
+			Bounties struct {
+				Data []any `json:"data"`
+			} `json:"bounties"`
+		} `json:"relationships,omitempty"`
+	} `json:"data"`
 	Links struct {
 		Self string `json:"self"`
 		Next string `json:"next"`

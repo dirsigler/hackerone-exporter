@@ -1,0 +1,63 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  BINARY_NAME: hackerone-exporter
+  GO_FILES: "go.* **/*.go"
+
+tasks:
+  default:
+    cmds:
+      - task: tidy
+      - task: lint
+      - task: test
+      - task: build
+    silent: true
+
+  build:
+    desc: "Build the Go binary"
+    sources:
+      - "{{.GO_FILES}}"
+    generates:
+      - "{{.BINARY_NAME}}"
+    cmds:
+      - go build -v -o {{.BINARY_NAME}} ./cmd/exporter
+
+  run:
+    desc: "Run the exporter"
+    deps:
+      - build
+    cmds:
+      - ./{{.BINARY_NAME}}
+
+  test:
+    desc: "Run Go tests"
+    cmds:
+      - go test -v ./...
+
+  lint:
+    desc: "Run golangci-lint"
+    cmds:
+      - golangci-lint run
+
+  tidy:
+    desc: "Run go mod tidy"
+    cmds:
+      - go mod tidy
+
+  update-hooks:
+    desc: "Update pre-commit hooks"
+    cmds:
+      - pre-commit autoupdate
+
+  dev:
+    desc: "Run with live reload using air"
+    cmds:
+      - air
+
+  install-tools:
+    desc: "Install development tools"
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - go install github.com/air-verse/air@latest

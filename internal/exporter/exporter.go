@@ -1,8 +1,21 @@
+// Copyright 2025 Dennis Irsigler
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package exporter
 
 import (
 	"context"
-
 	"log/slog"
 	"sync"
 	"time"
@@ -24,7 +37,7 @@ type Exporter struct {
 
 // New creates a new HackerOne exporter
 func New(cfg *config.Config, logger *slog.Logger) *Exporter {
-	HackerOneClient := client.New(cfg.HackerOneBasicAuthUsername, cfg.HackerOneBasicAuthPassword, cfg.HackerOneAPIURL, logger)
+	HackerOneClient := client.New(cfg.APIUser, cfg.APIPassword, cfg.APIURL, logger)
 	prometheusMetrics := metrics.New()
 
 	return &Exporter{
@@ -55,7 +68,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	e.metrics.Reset()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(e.config.ScrapeInterval)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	timer := prometheus.NewTimer(e.metrics.ScrapeDuration)
@@ -63,7 +76,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	e.logger.Info("Starting HackerOne metrics scrape")
 
-	assets, err := e.client.GetAssets(ctx, e.config.OrganizationID)
+	assets, err := e.client.GetAssets(ctx, e.config.OrgID)
 	if err != nil {
 		e.metrics.ScrapeErrors.Inc()
 		e.logger.Error("getting assets", slog.String("error", err.Error()))
@@ -83,7 +96,9 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			e.metrics.ScrapeErrors.Inc()
 			e.logger.Error("getting reports for program", slog.String("program", program.ID), slog.String("error", err.Error()))
 		}
-		e.metrics.ReportsTotal.WithLabelValues(e.config.OrganizationID).Set(float64(len(reports.Data)))
+		for _, report := range reports.Data {
+			e.metrics.ReportsTotal.WithLabelValues(e.config.OrgID, report.Attributes.State).Inc()
+		}
 
 		hackers, err := e.client.GetInvitedHackers(ctx, program.ID)
 		if err != nil {
@@ -91,7 +106,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			e.logger.Error("getting hackers for program", slog.String("program", program.ID), slog.String("error", err.Error()))
 		}
 		for _, hacker := range hackers.Data {
-			e.metrics.InvitedHackersTotal.WithLabelValues(e.config.OrganizationID, hacker.Attributes.State).Inc()
+			e.metrics.InvitedHackersTotal.WithLabelValues(e.config.OrgID, hacker.Attributes.State).Inc()
 		}
 
 		weaknesses, err := e.client.GetWeaknesses(ctx, program.ID)
@@ -104,7 +119,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 
 	}
-	e.metrics.AssetsTotal.WithLabelValues(e.config.OrganizationID).Set(float64(len(assets.Data)))
+	e.metrics.AssetsTotal.WithLabelValues(e.config.OrgID).Set(float64(len(assets.Data)))
 
 	e.metrics.LastScrapeTime.SetToCurrentTime()
 	e.logger.Info("HackerOne metrics scrape completed")

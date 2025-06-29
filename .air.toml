@@ -1,0 +1,18 @@
+# .air.toml
+root = "."
+tmp_dir = "dist"
+
+[build]
+  cmd = "go build -o ./dist/hackerone-exporter ./cmd/exporter"
+  bin = "./dist/hackerone-exporter"
+  full_bin = "./dist/hackerone-exporter"
+  include_ext = ["go"]
+  exclude_dir = ["dist", ".git", ".github"]
+  log = "air.log"
+  stop_on_error = true
+
+[log]
+  time = true
+
+[misc]
+  clean_on_exit = true
