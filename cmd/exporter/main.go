@@ -60,7 +60,7 @@ func main() {
 			// Setup HTTP server
 			mux := http.NewServeMux()
 			mux.HandleFunc("/", handler.IndexHandler)
-			mux.HandleFunc("/health", handler.HealthHandler)
+			mux.HandleFunc("/healthz", handler.HealthHandler)
 			mux.Handle("/metrics", promhttp.Handler())
 
 			server := &http.Server{

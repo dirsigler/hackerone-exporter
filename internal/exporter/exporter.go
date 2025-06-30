@@ -37,11 +37,11 @@ type Exporter struct {
 
 // New creates a new HackerOne exporter
 func New(cfg *config.Config, logger *slog.Logger) *Exporter {
-	HackerOneClient := client.New(cfg.APIUser, cfg.APIPassword, cfg.APIURL, logger)
+	hackerOneClient := client.New(cfg.APIUser, cfg.APIPassword, cfg.APIURL, logger)
 	prometheusMetrics := metrics.New()
 
 	return &Exporter{
-		client:  HackerOneClient,
+		client:  hackerOneClient,
 		metrics: prometheusMetrics,
 		logger:  logger,
 		config:  cfg,
