@@ -149,7 +149,7 @@ func (c *HackerOneClient) GetInvitedHackers(ctx context.Context, programID strin
 	return &hackers, nil
 }
 
-// GetWeaknesses retroves all Weaknesses for the program
+// GetWeaknesses retrieves all Weaknesses for the program
 // https://api.hackerone.com/customer-resources/#programs-get-weaknesses
 func (c *HackerOneClient) GetWeaknesses(ctx context.Context, programID string) (*types.Weaknesses, error) {
 	var weaknesses types.Weaknesses
@@ -164,4 +164,38 @@ func (c *HackerOneClient) GetWeaknesses(ctx context.Context, programID string) (
 		slog.Int("count", len(weaknesses.Data)))
 
 	return &weaknesses, nil
+}
+
+// GetStructruedScopes retrieves all structured scopes for the program
+// https://api.hackerone.com/customer-resources/#programs-get-structured-scopes
+func (c *HackerOneClient) GetStructruedScopes(ctx context.Context, programID string) (*types.StructuredScopes, error) {
+	var scopes types.StructuredScopes
+	endpoint := fmt.Sprintf("/v1/programs/%s/structured_scopes", programID)
+
+	if err := c.makeRequest(ctx, endpoint, &scopes); err != nil {
+		return nil, fmt.Errorf("getting structured scopes for program %s: %w", programID, err)
+	}
+
+	c.logger.Debug("Retrieved structured scopes",
+		slog.String("programID", programID),
+		slog.Int("count", len(scopes.Data)))
+
+	return &scopes, nil
+}
+
+// GetReports retrieves all Reports for a program
+// https://api.hackerone.com/customer-resources/#programs-get-reporters
+func (c *HackerOneClient) GetReporters(ctx context.Context, programID string) (*types.Reporters, error) {
+	var reporters types.Reporters
+	endpoint := fmt.Sprintf("/v1//programs/%s/reporters", programID)
+
+	if err := c.makeRequest(ctx, endpoint, &reporters); err != nil {
+		return nil, fmt.Errorf("getting reporters for program %s: %w", programID, err)
+	}
+
+	c.logger.Debug("Retrieved reporters",
+		slog.String("programID", programID),
+		slog.Int("count", len(reporters.Data)))
+
+	return &reporters, nil
 }

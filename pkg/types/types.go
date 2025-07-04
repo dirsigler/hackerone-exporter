@@ -275,3 +275,46 @@ type Weaknesses struct {
 	} `json:"data"`
 	Links struct{} `json:"links"`
 }
+
+type StructuredScopes struct {
+	Data []struct {
+		ID         string `json:"id"`
+		Type       string `json:"type"`
+		Attributes struct {
+			AssetIdentifier            string    `json:"asset_identifier"`
+			AssetType                  string    `json:"asset_type"`
+			ConfidentialityRequirement string    `json:"confidentiality_requirement"`
+			IntegrityRequirement       string    `json:"integrity_requirement"`
+			AvailabilityRequirement    string    `json:"availability_requirement"`
+			MaxSeverity                string    `json:"max_severity"`
+			CreatedAt                  time.Time `json:"created_at"`
+			UpdatedAt                  time.Time `json:"updated_at"`
+			Instruction                any       `json:"instruction"`
+			EligibleForBounty          bool      `json:"eligible_for_bounty"`
+			EligibleForSubmission      bool      `json:"eligible_for_submission"`
+			Reference                  string    `json:"reference"`
+		} `json:"attributes"`
+	} `json:"data"`
+	Links struct{} `json:"links"`
+}
+
+type Reporters struct {
+	Data []struct {
+		ID         string `json:"id"`
+		Type       string `json:"type"`
+		Attributes struct {
+			Username       string    `json:"username"`
+			Name           string    `json:"name"`
+			Disabled       bool      `json:"disabled"`
+			CreatedAt      time.Time `json:"created_at"`
+			ProfilePicture struct {
+				Six2X62   string `json:"62x62"`
+				Eight2X82 string `json:"82x82"`
+				One10X110 string `json:"110x110"`
+				Two60X260 string `json:"260x260"`
+			} `json:"profile_picture"`
+			Reputation int `json:"reputation"`
+		} `json:"attributes"`
+	} `json:"data"`
+	Links struct{} `json:"links"`
+}

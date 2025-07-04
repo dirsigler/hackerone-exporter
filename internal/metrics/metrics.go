@@ -24,14 +24,16 @@ const (
 
 // Metrics holds all Prometheus metrics for HackerOne
 type Metrics struct {
-	AssetsTotal         *prometheus.GaugeVec
-	ReportsTotal        *prometheus.GaugeVec
-	ProgramsTotal       *prometheus.GaugeVec
-	InvitedHackersTotal *prometheus.GaugeVec
-	WeaknessesTotal     *prometheus.GaugeVec
-	LastScrapeTime      prometheus.Gauge
-	ScrapeDuration      prometheus.Histogram
-	ScrapeErrors        prometheus.Counter
+	AssetsTotal           *prometheus.GaugeVec
+	ReportsTotal          *prometheus.GaugeVec
+	ProgramsTotal         *prometheus.GaugeVec
+	InvitedHackersTotal   *prometheus.GaugeVec
+	WeaknessesTotal       *prometheus.GaugeVec
+	StructuredScopesTotal *prometheus.GaugeVec
+	ReportersTotal        *prometheus.GaugeVec
+	LastScrapeTime        prometheus.Gauge
+	ScrapeDuration        prometheus.Histogram
+	ScrapeErrors          prometheus.Counter
 }
 
 var label = []string{"organization_id"}
@@ -74,6 +76,20 @@ func New() *Metrics {
 		},
 			[]string{"name", "id"},
 		),
+		StructuredScopesTotal: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name:      "structured_scopes_total",
+			Help:      "Total number of HackerOne Structured Scopes",
+			Namespace: namespace,
+		},
+			[]string{"asset_identifier", "asset_type"},
+		),
+		ReportersTotal: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name:      "reporters_total",
+			Help:      "Total number of HackerOne Reporters",
+			Namespace: namespace,
+		},
+			[]string{"username", "reputation"},
+		),
 		ScrapeErrors: prometheus.NewCounter(prometheus.CounterOpts{
 			Name:      "scrape_errors_total",
 			Help:      "Total number of HackerOne API scrape errors",
@@ -102,5 +118,7 @@ func (m *Metrics) Reset() {
 	m.ProgramsTotal.Reset()
 	m.InvitedHackersTotal.Reset()
 	m.WeaknessesTotal.Reset()
+	m.StructuredScopesTotal.Reset()
+	m.ReportersTotal.Reset()
 	// Note: Counters and histograms cannot be reset in Prometheus
 }
