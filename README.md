@@ -7,16 +7,18 @@ This is a Prometheus Exporter for the [HackerOne](https://hackerone.com) API. It
 
 ## ⚙️ Metrics
 
-| Name                                | Labels                     | Description                                  |
-| ----------------------------------- | -------------------------- | -------------------------------------------- |
-| `hackerone_assets_total`            | `organization_id`          | Total number of HackerOne Assets             |
-| `hackerone_reports_total`           | `organization_id`          | Total number of HackerOne Reports            |
-| `hackerone_programs_total`          | `handle`, `state`          | Total number of HackerOne Programs           |
-| `hackerone_invited_hackers_total`   | `organization_id`, `state` | Total number of HackerOne Invited Hackers    |
-| `hackerone_weaknesses_total`        | `name`, `id`               | Total number of HackerOne Weaknesses         |
-| `hackerone_scrape_errors_total`     |                            | Total number of HackerOne API scrape errors  |
-| `hackerone_last_scrape_timestamp`   |                            | Unix timestamp of the last successful scrape |
-| `hackerone_scrape_duration_seconds` |                            | Duration of HackerOne API scrapes in seconds |
+| Name                                | Labels                           | Description                                  |
+| ----------------------------------- | -------------------------------- | -------------------------------------------- |
+| `hackerone_assets_total`            | `organization_id`                | Total number of HackerOne Assets             |
+| `hackerone_reports_total`           | `organization_id`, `state`       | Total number of HackerOne Reports            |
+| `hackerone_programs_total`          | `handle`, `state`                | Total number of HackerOne Programs           |
+| `hackerone_invited_hackers_total`   | `organization_id`, `state`       | Total number of HackerOne Invited Hackers    |
+| `hackerone_weaknesses_total`        | `name`, `id`                     | Total number of HackerOne Weaknesses         |
+| `hackerone_structured_scopes_total` | `asset_identifier`, `asset_type` | Total number of HackerOne Structured Scopes  |
+| `hackerone_reporters_total`         | `username`, `reputation`         | Total number of HackerOne Reporters          |
+| `hackerone_scrape_errors_total`     |                                  | Total number of HackerOne API scrape errors  |
+| `hackerone_last_scrape_timestamp`   |                                  | Unix timestamp of the last successful scrape |
+| `hackerone_scrape_duration_seconds` |                                  | Duration of HackerOne API scrapes in seconds |
 
 ## 🚀 Deployment
 

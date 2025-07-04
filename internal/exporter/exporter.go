@@ -16,6 +16,7 @@ package exporter
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -56,6 +57,8 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	e.metrics.ProgramsTotal.Describe(ch)
 	e.metrics.InvitedHackersTotal.Describe(ch)
 	e.metrics.WeaknessesTotal.Describe(ch)
+	e.metrics.StructuredScopesTotal.Describe(ch)
+	e.metrics.ReportersTotal.Describe(ch)
 	e.metrics.ScrapeErrors.Describe(ch)
 	e.metrics.LastScrapeTime.Describe(ch)
 	e.metrics.ScrapeDuration.Describe(ch)
@@ -118,6 +121,24 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			e.metrics.WeaknessesTotal.WithLabelValues(weakness.Attributes.Name, weakness.ID).Inc()
 		}
 
+		scopes, err := e.client.GetStructruedScopes(ctx, program.ID)
+		if err != nil {
+			e.metrics.ScrapeErrors.Inc()
+			e.logger.Error("getting structured scopes for program", slog.String("program", program.ID), slog.String("error", err.Error()))
+		}
+		for _, scope := range scopes.Data {
+			e.metrics.StructuredScopesTotal.WithLabelValues(scope.Attributes.AssetIdentifier, scope.Attributes.AssetType).Inc()
+		}
+
+		reporters, err := e.client.GetReporters(ctx, program.ID)
+		if err != nil {
+			e.metrics.ScrapeErrors.Inc()
+			e.logger.Error("getting reporters for program", slog.String("program", program.ID), slog.String("error", err.Error()))
+		}
+		//nolint:forcetypeassert
+		for _, reporter := range reporters.Data {
+			e.metrics.ReportersTotal.WithLabelValues(reporter.Attributes.Username, fmt.Sprintf("%d", reporter.Attributes.Reputation)).Inc()
+		}
 	}
 	e.metrics.AssetsTotal.WithLabelValues(e.config.OrgID).Set(float64(len(assets.Data)))
 
@@ -129,6 +150,8 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	e.metrics.ProgramsTotal.Collect(ch)
 	e.metrics.InvitedHackersTotal.Collect(ch)
 	e.metrics.WeaknessesTotal.Collect(ch)
+	e.metrics.StructuredScopesTotal.Collect(ch)
+	e.metrics.ReportersTotal.Collect(ch)
 	e.metrics.ScrapeErrors.Collect(ch)
 	e.metrics.LastScrapeTime.Collect(ch)
 	e.metrics.ScrapeDuration.Collect(ch)
